@@ -15,12 +15,12 @@ public class Tile {
 
     private int pX, pY; //pixel position
     private int gX, gY; //grid position
-    private GameField grid;
+    private final GameField grid;
 
     private int lX, lY;
 
-    private RoundRectangle2D rect;
-    private Fonts fontManager;
+    private final RoundRectangle2D rect;
+    private final Fonts fontManager;
 
     private boolean merged;
     private boolean merging;
@@ -31,7 +31,7 @@ public class Tile {
 
     private int moveSpeed = 35;
 
-    private Game game;
+    private final Game game;
 
     public Tile(int x, int y, int width, int height, Fonts fontManager, int posX, int posY, GameField grid, Game game) {
         this.game = game;
@@ -127,10 +127,11 @@ public class Tile {
                 moveTo(_x, _y);
             }
         }
-
     }
 
     private void moveTo(int _x, int _y){
+        game.tMoved = true; //tell the Game class that at least one tile has moved
+
         grid.updateTilePos(gX, gY, _x, _y, this);
         gX = _x;
         gY = _y;

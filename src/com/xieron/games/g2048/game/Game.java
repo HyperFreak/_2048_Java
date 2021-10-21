@@ -16,7 +16,7 @@ public class Game {
     private final GameField gameField;
     private final int tileSize = 110;
 
-
+    public boolean tMoved = false;
 
     private final Fonts fonts;
 
@@ -152,7 +152,10 @@ public class Game {
                 break;
         }
 
-        addTile(); //TODO: change it so that this function will only be called if at least one tile moved
+        if(tMoved) {    //only generate a new Tile if there has been actual movement (otherwise just a button press would generate new tiles)
+            tMoved = false;
+            addTile();
+        }
     }
 
 
