@@ -10,28 +10,26 @@ import java.awt.Point;
 
 public class Game {
 
-    private InputManager input;
+    private final InputManager input;
 
     private final int tilesX = 4, tilesY = 4;
-    private GameField gameField;
-    private final int fieldWidth = 550, fieldHeight = 550;
-    private int tileGap = 25;
-    private final int border = 20;
+    private final GameField gameField;
     private final int tileSize = 110;
 
-    private boolean moving = false;
-    private int tileCount = 0;
-    private int stopCounter = 0;
 
-    private Fonts fonts;
+
+    private final Fonts fonts;
 
     public Game(InputManager input) {
 
-        this.tileGap = (fieldHeight - (2 * border + tilesY * tileSize)) / (tilesY - 1);
+        int fieldHeight = 550;
+        int border = 20;
+        int tileGap = (fieldHeight - (2 * border + tilesY * tileSize)) / (tilesY - 1);
 
         this.fonts = new Fonts(tileSize);
 
         this.input = input;
+        int fieldWidth = 550;
         this.gameField = new GameField(4, 4, Window.WIDTH / 2 - fieldWidth / 2, Window.HEIGHT - Window.WIDTH / 2 - fieldHeight / 2, fieldWidth, fieldHeight, 25, 25, tileSize, tileGap, border);
 
         //F = fieldHeight, B = border, T = tileSize, G = tileGap
@@ -76,78 +74,10 @@ public class Game {
         this.gameField.setTiles(tiles);
     }
 
-    private void moveTiles(byte dir){
-
-        if(!moving) {
-            moving = true;
-
-            tileCount = 0;
 
 
-            switch (dir) {
-                case 0: //right
 
-                    //TODO: move, starting right first then blah blah.... also. Add animation
 
-                    for (int y = 0; y < tilesY; y++) {
-                        for (int x = tilesX - 2; x >= 0; x--) {
-                            if (gameField.getTile(x, y) != null) {
-                                gameField.getTile(x, y).moveRight();
-
-                                tileCount++;
-                            }
-                        }
-                    }
-                    //gameField.printTileArray();
-                    break;
-                case 1: //left
-                    for (int y = 0; y < tilesY; y++) {
-                        for (int x = 1; x < tilesX; x++) {
-                            if (gameField.getTile(x, y) != null) {
-                                gameField.getTile(x, y).moveLeft();
-
-                                tileCount++;
-                            }
-                        }
-                    }
-
-                    break;
-                case 2: //up
-                    for (int x = 0; x < tilesX; x++) {
-                        for (int y = 1; y < tilesY; y++) {
-                            if (gameField.getTile(x, y) != null) {
-                                gameField.getTile(x, y).moveUp();
-
-                                tileCount++;
-                            }
-                        }
-                    }
-
-                    break;
-                case 3: //down
-                    for (int x = 0; x < tilesX; x++) {
-                        for (int y = 2; y >= 0; y--) {
-                            if (gameField.getTile(x, y) != null) {
-                                gameField.getTile(x, y).moveDown();
-
-                                tileCount++;
-                            }
-                        }
-                    }
-                    break;
-            }
-        }
-
-    }
-
-    public void stopMoving(){
-        stopCounter++;
-        if(stopCounter >= tileCount){
-            stopCounter = 0;
-            moving = false;
-            addTile();
-        }
-    }
 
     private void addTile(){
         if(gameField.isFull()){
@@ -179,13 +109,50 @@ public class Game {
     }
 
     private void initControls() {
-        this.input.setRightAction(() -> moveTiles((byte)0));
-        this.input.setLeftAction(() -> moveTiles((byte)1));
-        this.input.setDownAction(() -> moveTiles((byte)3));
-        this.input.setUpAction(() -> moveTiles((byte)2));
+        this.input.setRightAction(() -> moveTiles(InputManager.RIGHT));
+        this.input.setLeftAction(() -> moveTiles(InputManager.LEFT));
+        this.input.setDownAction(() -> moveTiles(InputManager.DOWN));
+        this.input.setUpAction(() -> moveTiles(InputManager.UP));
+    }
 
 
+    private void moveH(int start, int count, int end, int direction){
+        for(int y = 0; y < 4; y++){
+            for(int x = start; x != end; x += count) {
+                if(gameField.getTile(x, y) != null){
+                    gameField.getTile(x, y).move(direction);
+                }
+            }
+        }
+    }
 
+    private void moveV(int start, int count, int end, int direction){
+        for(int x = 0; x < 4; x++){
+            for(int y = start; y != end; y += count) {
+                if(gameField.getTile(x, y) != null){
+                    gameField.getTile(x, y).move(direction);
+                }
+            }
+        }
+    }
+
+    public void moveTiles(int direction){
+        switch(direction){
+            case InputManager.RIGHT:
+                moveH(3, -1, -1, direction);
+                break;
+            case InputManager.LEFT:
+                moveH(0, 1, 4, direction);
+                break;
+            case InputManager.UP:
+                moveV(0, 1, 4, direction);
+                break;
+            case InputManager.DOWN:
+                moveV(3, -1, -1, direction);
+                break;
+        }
+
+        addTile(); //TODO: change it so that this function will only be called if at least one tile moved
     }
 
 

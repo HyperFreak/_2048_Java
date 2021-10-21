@@ -1,5 +1,6 @@
 package com.xieron.games.g2048.game;
 
+import com.xieron.games.g2048.input.InputManager;
 import com.xieron.games.g2048.ui.Colors;
 import com.xieron.games.g2048.ui.Fonts;
 
@@ -12,8 +13,8 @@ public class Tile {
     private int num;
     private int value;
 
-    private int xPos, yPos;
-    private int posX, posY;
+    private int pX, pY; //pixel position
+    private int gX, gY; //grid position
     private GameField grid;
 
     private int lX, lY;
@@ -40,54 +41,16 @@ public class Tile {
         this.rect = new RoundRectangle2D.Float(x, y, width, height, 10, 10);
         this.fontManager = fontManager;
 
-        this.posX = posX;
-        this.posY = posY;
+        this.gX = posX;
+        this.gY = posY;
         this.grid = grid;
     }
 
     public void update(){
-        xPos = (int)rect.getX();
-        yPos = (int)rect.getY();
-        nX = grid.getTileXPos(posX);
-        nY = grid.getTileYPos(posY);
-        if(moving){
-            if(nX > xPos){
-                xPos += moveSpeed;
-                if(xPos > nX){
-                    xPos = nX;
-                }
-
-            }else if(nX < xPos) {
-                xPos -= moveSpeed;
-                if(xPos < nX){
-                    xPos = nX;
-                }
-            }else if(nY > yPos) {
-                yPos += moveSpeed;
-                if(yPos > nY){
-                    yPos = nY;
-                }
-            }else if(nY < yPos) {
-                yPos -= moveSpeed;
-                if(yPos < nY){
-                    yPos = nY;
-                }
-            }else{
-
-
-                game.stopMoving();
-                if(merging){
-                    mergewith(lX, lY, grid.getTile(posX, posY));
-                }
-
-                moving = false;
-            }
-
-
-
-            rect.setRoundRect(xPos, yPos, rect.getWidth(), rect.getHeight(), rect.getArcWidth(), rect.getArcHeight());
-
-        }
+        pX = (int)rect.getX();
+        pY = (int)rect.getY();
+        nX = grid.getTileXPos(gX);
+        nY = grid.getTileYPos(gY);
     }
 
     public void render(Graphics2D g){
@@ -117,179 +80,70 @@ public class Tile {
     }
 
     private int rand2_4() {
-        if((int)(Math.random() * 4) == 2) {
+        if((int)(Math.random() * 6) == 2) {
             return 4;
         }
         return 2;
     }
 
+    public void move(int direction){
+        switch (direction){
+            case InputManager.RIGHT:
+                move(gX + 1, gY, direction);
+                break;
 
-    /*
-    *
+            case InputManager.LEFT:
+                move(gX - 1, gY, direction);
+                break;
 
-DDDDDDDDDDDDD             OOOOOOOOO     EEEEEEEEEEEEEEEEEEEEEE   SSSSSSSSSSSSSSS      NNNNNNNN        NNNNNNNN     OOOOOOOOO     TTTTTTTTTTTTTTTTTTTTTTT     WWWWWWWW                           WWWWWWWW     OOOOOOOOO     RRRRRRRRRRRRRRRRR   KKKKKKKKK    KKKKKKK
-D::::::::::::DDD        OO:::::::::OO   E::::::::::::::::::::E SS:::::::::::::::S     N:::::::N       N::::::N   OO:::::::::OO   T:::::::::::::::::::::T     W::::::W                           W::::::W   OO:::::::::OO   R::::::::::::::::R  K:::::::K    K:::::K
-D:::::::::::::::DD    OO:::::::::::::OO E::::::::::::::::::::ES:::::SSSSSS::::::S     N::::::::N      N::::::N OO:::::::::::::OO T:::::::::::::::::::::T     W::::::W                           W::::::W OO:::::::::::::OO R::::::RRRRRR:::::R K:::::::K    K:::::K
-DDD:::::DDDDD:::::D  O:::::::OOO:::::::OEE::::::EEEEEEEEE::::ES:::::S     SSSSSSS     N:::::::::N     N::::::NO:::::::OOO:::::::OT:::::TT:::::::TT:::::T     W::::::W                           W::::::WO:::::::OOO:::::::ORR:::::R     R:::::RK:::::::K   K::::::K
-  D:::::D    D:::::D O::::::O   O::::::O  E:::::E       EEEEEES:::::S                 N::::::::::N    N::::::NO::::::O   O::::::OTTTTTT  T:::::T  TTTTTT      W:::::W           WWWWW           W:::::W O::::::O   O::::::O  R::::R     R:::::RKK::::::K  K:::::KKK
-  D:::::D     D:::::DO:::::O     O:::::O  E:::::E             S:::::S                 N:::::::::::N   N::::::NO:::::O     O:::::O        T:::::T               W:::::W         W:::::W         W:::::W  O:::::O     O:::::O  R::::R     R:::::R  K:::::K K:::::K
-  D:::::D     D:::::DO:::::O     O:::::O  E::::::EEEEEEEEEE    S::::SSSS              N:::::::N::::N  N::::::NO:::::O     O:::::O        T:::::T                W:::::W       W:::::::W       W:::::W   O:::::O     O:::::O  R::::RRRRRR:::::R   K::::::K:::::K
-  D:::::D     D:::::DO:::::O     O:::::O  E:::::::::::::::E     SS::::::SSSSS         N::::::N N::::N N::::::NO:::::O     O:::::O        T:::::T                 W:::::W     W:::::::::W     W:::::W    O:::::O     O:::::O  R:::::::::::::RR    K:::::::::::K
-  D:::::D     D:::::DO:::::O     O:::::O  E:::::::::::::::E       SSS::::::::SS       N::::::N  N::::N:::::::NO:::::O     O:::::O        T:::::T                  W:::::W   W:::::W:::::W   W:::::W     O:::::O     O:::::O  R::::RRRRRR:::::R   K:::::::::::K
-  D:::::D     D:::::DO:::::O     O:::::O  E::::::EEEEEEEEEE          SSSSSS::::S      N::::::N   N:::::::::::NO:::::O     O:::::O        T:::::T                   W:::::W W:::::W W:::::W W:::::W      O:::::O     O:::::O  R::::R     R:::::R  K::::::K:::::K
-  D:::::D     D:::::DO:::::O     O:::::O  E:::::E                         S:::::S     N::::::N    N::::::::::NO:::::O     O:::::O        T:::::T                    W:::::W:::::W   W:::::W:::::W       O:::::O     O:::::O  R::::R     R:::::R  K:::::K K:::::K
-  D:::::D    D:::::D O::::::O   O::::::O  E:::::E       EEEEEE            S:::::S     N::::::N     N:::::::::NO::::::O   O::::::O        T:::::T                     W:::::::::W     W:::::::::W        O::::::O   O::::::O  R::::R     R:::::RKK::::::K  K:::::KKK
-DDD:::::DDDDD:::::D  O:::::::OOO:::::::OEE::::::EEEEEEEE:::::ESSSSSSS     S:::::S     N::::::N      N::::::::NO:::::::OOO:::::::O      TT:::::::TT                    W:::::::W       W:::::::W         O:::::::OOO:::::::ORR:::::R     R:::::RK:::::::K   K::::::K
-D:::::::::::::::DD    OO:::::::::::::OO E::::::::::::::::::::ES::::::SSSSSS:::::S     N::::::N       N:::::::N OO:::::::::::::OO       T:::::::::T                     W:::::W         W:::::W           OO:::::::::::::OO R::::::R     R:::::RK:::::::K    K:::::K
-D::::::::::::DDD        OO:::::::::OO   E::::::::::::::::::::ES:::::::::::::::SS      N::::::N        N::::::N   OO:::::::::OO         T:::::::::T                      W:::W           W:::W              OO:::::::::OO   R::::::R     R:::::RK:::::::K    K:::::K
-DDDDDDDDDDDDD             OOOOOOOOO     EEEEEEEEEEEEEEEEEEEEEE SSSSSSSSSSSSSSS        NNNNNNNN         NNNNNNN     OOOOOOOOO           TTTTTTTTTTT                       WWW             WWW                 OOOOOOOOO     RRRRRRRR     RRRRRRRKKKKKKKKK    KKKKKKK
+            case InputManager.UP:
+                move(gX, gY - 1, direction);
+                break;
 
-
-
-
-               at least not completely
-
-
-    *
-    * */
-
-
-    public void moveRight(){
-        int cX = posX, cY = posY;
-
-        moving = true;
-
-        if(posX != 3){
-            if(grid.getTile(posX + 1, posY) == null){
-                posX++;
-                moveRight();
-            }else{
-                if(grid.getTile(posX + 1, posY).getValue() == this.value && !grid.getTile(posX + 1, posY).hasMerged()){
-                    //MERGE
-                    merging = true;
-                    posX++;
-                    grid.getTile(posX, posY).setMerging(true);
-                    this.lX = cX;
-                    this.lY = cY;
-                    //mergewith(cX, cY, grid.getTile(posX + 1, posY));
-                }
-                nX = grid.getTileXPos(posX);
-            }
-
-            if(merging)
-                return;
-
-            if(cX != posX)
-                grid.updateTilePos(cX, cY, posX, posY, this);
+            case InputManager.DOWN:
+                move(gX, gY + 1, direction);
+                break;
         }
     }
 
-    public void moveLeft(){
-        int cX = posX, cY = posY;
-
-        moving = true;
-
-        if(posX != 0){
-            if(grid.getTile(posX - 1, posY) == null){
-                posX--;
-                moveLeft();
-            }else{
-                if(grid.getTile(posX - 1, posY).getValue() == this.value && !grid.getTile(posX - 1, posY).hasMerged()){
-                    //MERGE
-                    merging = true;
-                    posX--;
-                    grid.getTile(posX, posY).setMerging(true);
-                    this.lX = cX;
-                    this.lY = cY;
-                    //mergewith(cX, cY, grid.getTile(posX - 1, posY));
+    private void move(int _x, int _y, int direction) {
+        merged = false;
+        if(_x >= 0 && _x <= 3 && _y >= 0 && _y <= 3) {  //check if new position is not out of bounds
+            if(grid.getTile(_x, _y) == null){
+                moveTo(_x, _y);
+                int dN = direction == InputManager.RIGHT || direction == InputManager.DOWN ? 1 : -1;
+                if(direction > 1){      //0 and 1 are horizontal, so if it's bigger than 1, it's vertical
+                    move(_x, _y + dN, direction);
+                }else{
+                    move(_x + dN, _y, direction);           //by calling this method the tile will automatically move until there's nowhere left to go
                 }
-                nX = grid.getTileXPos(posX);
+            }else if(grid.getTile(_x, _y).getValue() == this.value && !grid.getTile(_x, _y).hasMerged()){
+                grid.removeTile(_x, _y);
+                this.value *= 2;
+                this.num++;
+
+                merged = true;
+
+                moveTo(_x, _y);
             }
-
-            if(merging)
-                return;
-
-            if(cX != posX)
-                grid.updateTilePos(cX, cY, posX, posY, this);
         }
+
     }
 
-    public void moveUp(){
-        int cX = posX, cY = posY;
+    private void moveTo(int _x, int _y){
+        grid.updateTilePos(gX, gY, _x, _y, this);
+        gX = _x;
+        gY = _y;
 
-        moving = true;
 
-        if(posY != 0){
-            if(grid.getTile(posX, posY - 1) == null){
-                posY--;
-                moveUp();
-            }else{
-                if(grid.getTile(posX, posY - 1).getValue() == this.value && !grid.getTile(posX, posY - 1).hasMerged()){
-                    //MERGE
-                    merging = true;
-                    this.lX = cX;
-                    this.lY = cY;
-                    posY--;
-                    grid.getTile(posX, posY).setMerging(true);
-                }
-                nY = grid.getTileYPos(posY);
-            }
+        pX = grid.getTileXPos(gX);
+        pY = grid.getTileYPos(gY);
 
-            if(merging)
-                return;
-
-            if(cY != posY)
-                grid.updateTilePos(cX, cY, posX, posY, this);
-        }
-    }
-
-    public void moveDown(){
-        int cX = posX, cY = posY;
-
-        moving = true;
-
-        if(posY != 3){
-            if(grid.getTile(posX, posY + 1) == null){
-                posY++;
-                moveDown();
-            }else{
-                if(grid.getTile(posX, posY + 1).getValue() == this.value && !grid.getTile(posX, posY + 1).hasMerged()){
-                    //MERGE
-                    merging = true;
-                    posY++;
-                    grid.getTile(posX, posY).setMerging(true);
-                    this.lX = cX;
-                    this.lY = cY;
-                }
-                nY = grid.getTileYPos(posY);
-            }
-
-            if(merging)
-                return;
-
-            if(cY != posY)
-                grid.updateTilePos(cX, cY, posX, posY, this);
-        }
-    }
-
-    private void mergewith(int oX, int oY, Tile other){
-        other.merge();
-        grid.removeTile(oX, oY);
-    }
-
-    public void merge(){
-        this.value *= 2;
-        this.num++;
-        this.merged = true;
-    }
-
-    public void setMerging(boolean b){
-        this.merged = b;
+        rect.setRoundRect(pX, pY, rect.getWidth(), rect.getHeight(), rect.getArcWidth(), rect.getArcHeight());
     }
 
     public boolean hasMerged(){
-        return this.merged;
+        return merged;
     }
-
 
 }

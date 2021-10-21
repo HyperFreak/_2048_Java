@@ -30,6 +30,11 @@ public class InputManager implements KeyListener {
     private boolean escPressed = false;
     private boolean backPressed = false;
 
+    public static final int RIGHT = 0;
+    public static final int LEFT = 1;
+    public static final int UP = 2;
+    public static final int DOWN = 3;
+
 
     public InputManager(){
         pressLeft = this::noFunc;
