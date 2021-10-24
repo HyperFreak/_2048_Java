@@ -10,7 +10,6 @@ import java.awt.geom.RoundRectangle2D;
 
 public class Tile {
 
-    private int num;
     private int value;
 
     private int pX, pY; //pixel position
@@ -29,6 +28,9 @@ public class Tile {
     private int nX;
     private int nY;
 
+    private int lastXPosition;
+    private int lastYPosition;
+
     private int moveSpeed = 35;
 
     private final Game game;
@@ -36,7 +38,6 @@ public class Tile {
     public Tile(int x, int y, int width, int height, Fonts fontManager, int posX, int posY, GameField grid, Game game) {
         this.game = game;
         this.value = rand2_4();
-        this.num = value == 4 ? 2 : 1;
 
         this.rect = new RoundRectangle2D.Float(x, y, width, height, 10, 10);
         this.fontManager = fontManager;
@@ -55,23 +56,8 @@ public class Tile {
 
     public void render(Graphics2D g){
         update();
-
-        if(num >= Colors.TILE.length){
-            g.setColor(Colors.TILE[Colors.TILE.length - 1]);
-        }else {
-            g.setColor(Colors.TILE[num]);
-        }
-        g.fill(rect);
-        if(num != 0){
-            //draw number as string
-            if(num == 1) {
-                g.setColor(Color.GRAY);
-            }else{
-                g.setColor(Color.WHITE);
-            }
-
-            g.setFont(fontManager.getFont(value));
-            g.drawString(Integer.toString(value), (int)rect.getX() + (int)rect.getWidth() / 2 - g.getFontMetrics().stringWidth(Integer.toString(value)) / 2, (int)rect.getY() + (int)rect.getHeight() / 2 + (int)((float)g.getFontMetrics().getHeight() / 3.3F));
+        if(!game.animationRunning()) {
+            TileRenderer.drawTile(g, rect, value);
         }
     }
 
@@ -86,7 +72,14 @@ public class Tile {
         return 2;
     }
 
+    public RoundRectangle2D getRRect() {
+        return this.rect;
+    }
+
     public void move(int direction){
+        lastXPosition = (int)rect.getX();
+        lastYPosition = (int)rect.getY();
+
         switch (direction){
             case InputManager.RIGHT:
                 move(gX + 1, gY, direction);
@@ -120,7 +113,6 @@ public class Tile {
             }else if(grid.getTile(_x, _y).getValue() == this.value && !grid.getTile(_x, _y).hasMerged()){
                 grid.removeTile(_x, _y);
                 this.value *= 2;
-                this.num++;
 
                 merged = true;
 
@@ -145,6 +137,24 @@ public class Tile {
 
     public boolean hasMerged(){
         return merged;
+    }
+
+
+    //animation movement stuff:
+    public int getXPos(){
+        return (int)rect.getX();
+    }
+
+    public int getYPos(){
+        return (int)rect.getY();
+    }
+
+    public int getLastX(){
+        return this.lastXPosition;
+    }
+
+    public int getLastY(){
+        return this.lastYPosition;
     }
 
 }

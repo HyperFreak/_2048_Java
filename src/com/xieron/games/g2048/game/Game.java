@@ -7,56 +7,70 @@ import com.xieron.games.g2048.ui.Window;
 
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.util.ArrayList;
 
 public class Game {
 
     private final InputManager input;
+    private final Fonts fonts;
+    private final GameField gameField;
 
     private final int tilesX = 4, tilesY = 4;
-    private final GameField gameField;
     private final int tileSize = 110;
 
     public boolean tMoved = false;
+    private boolean moving = false;
+    private final int animSpeed = 8;
 
-    private final Fonts fonts;
+    private final ArrayList<AnimationTile> animTiles;
 
     public Game(InputManager input) {
-
         int fieldHeight = 550;
         int border = 20;
+        int fieldWidth = 550;
         int tileGap = (fieldHeight - (2 * border + tilesY * tileSize)) / (tilesY - 1);
 
         this.fonts = new Fonts(tileSize);
-
         this.input = input;
-        int fieldWidth = 550;
         this.gameField = new GameField(4, 4, Window.WIDTH / 2 - fieldWidth / 2, Window.HEIGHT - Window.WIDTH / 2 - fieldHeight / 2, fieldWidth, fieldHeight, 25, 25, tileSize, tileGap, border);
+
+        animTiles = new ArrayList<>();
+        TileRenderer.init(fonts);
 
         //F = fieldHeight, B = border, T = tileSize, G = tileGap
         //F = 2*B + (n-1)*G + n*T   | - (2*B + n*T)
         //F - (2*B + n*T) = (n-1)*G
         //(F - (2*B + n*T) / (n - 1) = G
 
-
-
         this.initTiles();
         this.initControls();
 
         addTile();
-
     }
 
     public void update(){
-
+        if(moving){     //if the animation is ongoing
+            for(AnimationTile t : animTiles){
+                t.update();
+            }
+            if(animOver()){
+                moving = false;
+                addTile();
+            }
+        }
     }
 
     public void render(Graphics2D g){
         g.setColor(Colors.BACKGROUND);
         g.fillRect(0, 0, Window.WIDTH, Window.HEIGHT);
 
-
         gameField.render(g);
 
+        if(moving) {
+            for (AnimationTile t : animTiles) {
+                t.render(g);
+            }
+        }
     }
 
     private void initTiles() {
@@ -70,14 +84,8 @@ public class Game {
                 tiles[i][j] = null;//new Tile(x, y, tileSize, tileSize, fonts, i, j, gameField);
             }
         }
-
         this.gameField.setTiles(tiles);
     }
-
-
-
-
-
 
     private void addTile(){
         if(gameField.isFull()){
@@ -89,9 +97,7 @@ public class Game {
         int y = gameField.getTileYPos(pos.y);
 
         Tile tile = new Tile(x, y, tileSize, tileSize, fonts, pos.x, pos.y, gameField, this);
-
         //System.out.println(String.format("Tile[%d][%d] = %d, %d", pos.x, pos.y, x, y));
-
         gameField.addTile(tile, pos.x, pos.y);
     }
 
@@ -115,7 +121,6 @@ public class Game {
         this.input.setUpAction(() -> moveTiles(InputManager.UP));
     }
 
-
     private void moveH(int start, int count, int end, int direction){
         for(int y = 0; y < 4; y++){
             for(int x = start; x != end; x += count) {
@@ -137,6 +142,11 @@ public class Game {
     }
 
     public void moveTiles(int direction){
+        if(moving){
+            moving = false;
+            addTile();
+            //return;
+        }
         switch(direction){
             case InputManager.RIGHT:
                 moveH(3, -1, -1, direction);
@@ -153,11 +163,48 @@ public class Game {
         }
 
         if(tMoved) {    //only generate a new Tile if there has been actual movement (otherwise just a button press would generate new tiles)
+            startAnimation();
+
             tMoved = false;
-            addTile();
+            //addTile();
         }
     }
 
+    private void startAnimation(){
+        animTiles.clear();
+        Tile[] actives = gameField.getActiveTiles();
 
+        for(Tile t : actives){
+            addAnimTile(t);
+        }
+
+        for(AnimationTile t : animTiles){
+            t.startMoving();
+        }
+        moving = true;  //start animation
+    }
+
+    private void addAnimTile(Tile in){
+        if(in != null){
+            AnimationTile aT = new AnimationTile(in.getLastX(), in.getLastY(), in.getXPos(), in.getYPos(), animSpeed, in.getValue(), in.getRRect());
+            if(in.hasMerged()){
+                aT.setMerging();
+            }
+            animTiles.add(aT);
+        }
+    }
+
+    private boolean animOver(){
+        for(AnimationTile t : animTiles){
+            if(t.isMoving()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean animationRunning(){
+        return this.moving;
+    }
 
 }

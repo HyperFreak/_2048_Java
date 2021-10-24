@@ -5,6 +5,7 @@ import com.xieron.games.g2048.ui.Colors;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
 
 public class GameField {
 
@@ -110,6 +111,31 @@ public class GameField {
 
     public void removeTile(int cX, int cY){
         tiles[cX][cY] = null;
+    }
+
+
+    public Tile[][] getTileField(){
+        return this.tiles;
+    }
+
+    public Tile[] getActiveTiles(){
+        ArrayList<Tile> ts = new ArrayList<>();
+
+        for (Tile[] tile : tiles) {
+            for (Tile value : tile) {
+                if (value != null) {
+                    ts.add(value);
+                }
+            }
+        }
+
+        Tile[] output = new Tile[ts.size()];
+        int counter = 0;
+        for(Tile t : ts){
+            output[counter] = t;
+            counter++;
+        }
+        return output;
     }
 
 
