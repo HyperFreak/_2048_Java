@@ -1,11 +1,12 @@
 package com.xieron.games.g2048.input;
 
 import com.xieron.games.g2048.main.Main;
+import com.xieron.games.g2048.ui.UIButton;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
+import java.util.ArrayList;
 
-public class InputManager implements KeyListener {
+public class InputManager implements KeyListener, MouseListener, MouseMotionListener {
 
     private Runnable pressLeft;
     private Runnable pressRight;
@@ -34,6 +35,8 @@ public class InputManager implements KeyListener {
     public static final int LEFT = 1;
     public static final int UP = 2;
     public static final int DOWN = 3;
+
+    private ArrayList<UIButton> buttons;
 
 
     public InputManager(){
@@ -263,5 +266,51 @@ public class InputManager implements KeyListener {
     private void noFunc(){
         System.out.println("No Function has been assigned to this key yet!");
     }
+
+
+    //Mouse input
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        if(!buttons.isEmpty()){
+            for(UIButton b : buttons){
+                if(b.isActive())
+                    b.mousePressed(e.getPoint(), e.getButton());
+            }
+        }
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if(!buttons.isEmpty()){
+            for(UIButton b : buttons){
+                if(b.isActive())
+                    b.mouseReleased(e.getPoint(), e.getButton());
+            }
+        }
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        if(!buttons.isEmpty()){
+            for(UIButton b : buttons){
+                if(b.isActive())
+                    b.mouseMoved(e.getPoint());
+            }
+        }
+    }
+
+    public void addButton(UIButton btn){
+        buttons.add(btn);
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+    @Override
+    public void mouseExited(MouseEvent e) {}
+    @Override
+    public void mouseDragged(MouseEvent e) {}
+    @Override
+    public void mouseClicked(MouseEvent e) {}
 
 }

@@ -5,6 +5,7 @@ import com.xieron.games.g2048.ui.Colors;
 import com.xieron.games.g2048.ui.Fonts;
 import com.xieron.games.g2048.ui.Window;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -21,6 +22,12 @@ public class Game {
     public boolean tMoved = false;
     private boolean moving = false;
     private final int animSpeed = 8;
+
+    private long score = 0;
+    private long scoreToBeAdded = 0;
+    private String scoreTXT = "Score: 0";
+
+    private boolean gameOver;
 
     private final ArrayList<AnimationTile> animTiles;
 
@@ -54,8 +61,7 @@ public class Game {
                 t.update();
             }
             if(animOver()){
-                moving = false;
-                addTile();
+                endRound();
             }
         }
     }
@@ -71,6 +77,11 @@ public class Game {
                 t.render(g);
             }
         }
+
+        g.setFont(fonts.getFont(2));
+        g.setColor(Color.WHITE);
+        scoreTXT = String.format("Score: %d", score);
+        g.drawString(scoreTXT, 35, 145);
     }
 
     private void initTiles() {
@@ -143,10 +154,9 @@ public class Game {
 
     public void moveTiles(int direction){
         if(moving){
-            moving = false;
-            addTile();
-            //return;
+            endRound();
         }
+        animTiles.clear();
         switch(direction){
             case InputManager.RIGHT:
                 moveH(3, -1, -1, direction);
@@ -171,20 +181,13 @@ public class Game {
     }
 
     private void startAnimation(){
-        animTiles.clear();
-        Tile[] actives = gameField.getActiveTiles();
-
-        for(Tile t : actives){
-            addAnimTile(t);
-        }
-
         for(AnimationTile t : animTiles){
             t.startMoving();
         }
         moving = true;  //start animation
     }
 
-    private void addAnimTile(Tile in){
+    public void addAnimTile(Tile in){
         if(in != null){
             AnimationTile aT = new AnimationTile(in.getLastX(), in.getLastY(), in.getXPos(), in.getYPos(), animSpeed, in.getValue(), in.getRRect());
             if(in.hasMerged()){
@@ -205,6 +208,26 @@ public class Game {
 
     public boolean animationRunning(){
         return this.moving;
+    }
+
+    public void addScore(int value){
+        this.scoreToBeAdded += value;
+    }
+
+    private void endRound(){
+        moving = false;
+        addTile();
+        this.score += scoreToBeAdded;
+        scoreToBeAdded = 0;
+        checkGameOver();
+    }
+
+    private void checkGameOver(){
+        if(gameField.isFull()){
+            if(!gameField.possibleMove()){
+                gameOver = true;
+            }
+        }
     }
 
 }

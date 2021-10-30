@@ -17,8 +17,6 @@ public class AnimationTile {
     private int value;
 
     private RoundRectangle2D rect;
-    private RoundRectangle2D mergeP;
-    private boolean merging;
 
     private boolean moving = false;
 
@@ -84,12 +82,6 @@ public class AnimationTile {
     }
 
     public void render(Graphics2D g){
-        if(merging){            //the tile that will be replaced is drawn 1st
-            if(mergeP != null){
-                TileRenderer.drawTile(g, mergeP, value);
-            }
-        }
-
         TileRenderer.drawTile(g, rect, value);
     }
 
@@ -103,8 +95,6 @@ public class AnimationTile {
 
     public void setMerging(){
         this.value /= 2;
-        this.mergeP = new RoundRectangle2D.Double(destX, destY, rect.getWidth(), rect.getHeight(), rect.getArcWidth(), rect.getArcHeight());
-        this.merging = true;
     }
 
     @Override

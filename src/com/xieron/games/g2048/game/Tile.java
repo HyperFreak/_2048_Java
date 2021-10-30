@@ -97,6 +97,8 @@ public class Tile {
                 move(gX, gY + 1, direction);
                 break;
         }
+
+        game.addAnimTile(this);
     }
 
     private void move(int _x, int _y, int direction) {
@@ -114,6 +116,7 @@ public class Tile {
                 grid.removeTile(_x, _y);
                 this.value *= 2;
 
+                game.addScore(this.value);
                 merged = true;
 
                 moveTo(_x, _y);

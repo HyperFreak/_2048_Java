@@ -95,6 +95,39 @@ public class GameField {
         return true;
     }
 
+    public boolean possibleMove(){
+        //check for every tile if there's at least one tile with the same value next to it
+        for(int i = 0; i < tilesX; i++){
+            for(int j = 0; j < tilesY; j++){
+                int val = getTile(i, j).getValue();
+                if(i != 0){
+                    if(getTile(i - 1, j).getValue() == val){
+                        return true;
+                    }
+                }
+
+                if(j != 0){
+                    if(getTile(i, j - 1).getValue() == val){
+                        return true;
+                    }
+                }
+
+                if(i < tilesX - 1){
+                    if(getTile(i + 1, j).getValue() == val){
+                        return true;
+                    }
+                }
+
+                if(j < tilesY - 1){
+                    if(getTile(i, j + 1).getValue() == val){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
 
     public int getTileXPos(int xIndex){
         return (int)(field.getX() + border + xIndex * (tileSize + tileGap));
