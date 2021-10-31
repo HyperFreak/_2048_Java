@@ -1,10 +1,8 @@
 package com.xieron.games.g2048.ui;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.geom.RoundRectangle2D;
 
 public class UIButton {
 
@@ -14,22 +12,27 @@ public class UIButton {
     private String text;
     private Runnable buttonTask;
 
-    private Rectangle bounds;
+    private final RoundRectangle2D bounds;
 
     private Color normalCol;
-    private Color hoverCol;
-    private Color pressCol;
+    private final Color hoverCol;
+    private final Color pressCol;
 
-    private boolean active = false;
+    private final Font font;
+
+    private boolean active = true;
 
     public UIButton(int x, int y, int width, int height, String text){
-        this.bounds = new Rectangle(x, y, width, height);
+        this.bounds = new RoundRectangle2D.Float(x, y, width, height, 10, 10);
+
         this.text = text;
 
         //placeholder colors
-        normalCol = new Color(0xFFFF00);
-        hoverCol = new Color(0xFFFFAA);
-        pressCol = new Color(0xAAAA11);
+        normalCol = new Color(0x3A, 0x5D, 0xCD);
+        hoverCol = new Color(0x1A, 0x3D, 0xAD);
+        pressCol = new Color(0x0A, 0x1D, 0x8D);
+
+        font = new Font("Arial", Font.BOLD, (int)((float)height / 1.5F));
     }
 
     public void render(Graphics2D g){
@@ -41,16 +44,14 @@ public class UIButton {
             g.setColor(normalCol);
         }
         g.fill(bounds);
-    }
 
-    public void setText(String text){
-        this.text = text;
+        g.setColor(Color.WHITE);
+        g.setFont(font);
+        g.drawString(text, (int)(bounds.getX() + bounds.getWidth() / 2 - g.getFontMetrics().stringWidth(text) / 2), (int)(bounds.getY() + bounds.getHeight() / 2 + g.getFontMetrics().getHeight() / 3));
     }
 
     public void mouseMoved(Point mPos){
-        if(bounds.contains(mPos)){
-            hovered = true;
-        }
+        hovered = bounds.contains(mPos);
     }
 
     public void mousePressed(Point mPos, int button){
@@ -78,6 +79,15 @@ public class UIButton {
 
     public boolean isActive() {
         return this.active;
+    }
+
+    public void setTask(Runnable task){
+        this.buttonTask = task;
+    }
+
+    //specifically for Game Over Screen:
+    public void setAlpha(int alpha){
+        this.normalCol = new Color(normalCol.getRed(), normalCol.getGreen(), normalCol.getBlue(), alpha);
     }
 
 }

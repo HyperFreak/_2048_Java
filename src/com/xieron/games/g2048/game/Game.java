@@ -3,11 +3,15 @@ package com.xieron.games.g2048.game;
 import com.xieron.games.g2048.input.InputManager;
 import com.xieron.games.g2048.ui.Colors;
 import com.xieron.games.g2048.ui.Fonts;
+import com.xieron.games.g2048.ui.UIButton;
 import com.xieron.games.g2048.ui.Window;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.geom.RoundRectangle2D;
+import java.io.*;
 import java.util.ArrayList;
 
 public class Game {
@@ -23,11 +27,18 @@ public class Game {
     private boolean moving = false;
     private final int animSpeed = 8;
 
+    private long highScore = 0;
+    private boolean highScoreBroken = false;
+    private final RoundRectangle2D highScoreBG;
+    private final Font hsFont;
     private long score = 0;
     private long scoreToBeAdded = 0;
     private String scoreTXT = "Score: 0";
 
     private boolean gameOver;
+    private final GameOverScreen gOScreen;
+
+    private final UIButton btnReset;
 
     private final ArrayList<AnimationTile> animTiles;
 
@@ -37,6 +48,11 @@ public class Game {
         int fieldWidth = 550;
         int tileGap = (fieldHeight - (2 * border + tilesY * tileSize)) / (tilesY - 1);
 
+        //F = fieldHeight, B = border, T = tileSize, G = tileGap
+        //F = 2*B + (n-1)*G + n*T   | - (2*B + n*T)
+        //F - (2*B + n*T) = (n-1)*G
+        //(F - (2*B + n*T) / (n - 1) = G
+
         this.fonts = new Fonts(tileSize);
         this.input = input;
         this.gameField = new GameField(4, 4, Window.WIDTH / 2 - fieldWidth / 2, Window.HEIGHT - Window.WIDTH / 2 - fieldHeight / 2, fieldWidth, fieldHeight, 25, 25, tileSize, tileGap, border);
@@ -44,10 +60,15 @@ public class Game {
         animTiles = new ArrayList<>();
         TileRenderer.init(fonts);
 
-        //F = fieldHeight, B = border, T = tileSize, G = tileGap
-        //F = 2*B + (n-1)*G + n*T   | - (2*B + n*T)
-        //F - (2*B + n*T) = (n-1)*G
-        //(F - (2*B + n*T) / (n - 1) = G
+        this.btnReset = new UIButton(Window.WIDTH - 225, 20, 200, 35, "New Game");
+        this.btnReset.setTask(this::resetGame);
+        input.addButton(btnReset);
+
+        loadHighScore();
+
+        this.gOScreen = new GameOverScreen(input, this);
+        this.highScoreBG = new RoundRectangle2D.Float(33, 20, 200, 65, 15, 15);
+        hsFont = new Font("Arial", Font.PLAIN, 21);
 
         this.initTiles();
         this.initControls();
@@ -78,10 +99,24 @@ public class Game {
             }
         }
 
+        g.setColor(Color.DARK_GRAY);
+        g.fill(highScoreBG);
+
         g.setFont(fonts.getFont(2));
         g.setColor(Color.WHITE);
         scoreTXT = String.format("Score: %d", score);
         g.drawString(scoreTXT, 35, 145);
+
+        btnReset.render(g);
+
+        g.setFont(hsFont);
+        g.drawString("Highscore:", (int)(highScoreBG.getX() + highScoreBG.getWidth() / 2 - g.getFontMetrics().stringWidth("Highscore:") / 2), (int)highScoreBG.getY() + g.getFontMetrics().getHeight());
+        g.drawString(Long.toString(highScore), (int)(highScoreBG.getX() + highScoreBG.getWidth() / 2 - g.getFontMetrics().stringWidth(Long.toString(highScore)) / 2), (int)(highScoreBG.getY() + g.getFontMetrics().getHeight() * 2 + 5));
+
+
+        if(gameOver) {
+            gOScreen.render(g);
+        }
     }
 
     private void initTiles() {
@@ -107,7 +142,7 @@ public class Game {
         int x = gameField.getTileXPos(pos.x);
         int y = gameField.getTileYPos(pos.y);
 
-        Tile tile = new Tile(x, y, tileSize, tileSize, fonts, pos.x, pos.y, gameField, this);
+        Tile tile = new Tile(x, y, tileSize, tileSize, pos.x, pos.y, gameField, this);
         //System.out.println(String.format("Tile[%d][%d] = %d, %d", pos.x, pos.y, x, y));
         gameField.addTile(tile, pos.x, pos.y);
     }
@@ -156,6 +191,7 @@ public class Game {
         if(moving){
             endRound();
         }
+
         animTiles.clear();
         switch(direction){
             case InputManager.RIGHT:
@@ -172,11 +208,9 @@ public class Game {
                 break;
         }
 
-        if(tMoved) {    //only generate a new Tile if there has been actual movement (otherwise just a button press would generate new tiles)
+        if(tMoved) {
             startAnimation();
-
             tMoved = false;
-            //addTile();
         }
     }
 
@@ -219,15 +253,87 @@ public class Game {
         addTile();
         this.score += scoreToBeAdded;
         scoreToBeAdded = 0;
+
+        checkHighScore();
+
         checkGameOver();
+    }
+
+    private void checkHighScore(){
+        if(score > highScore){
+            highScoreBroken = true;
+            highScore = score;
+        }
+    }
+
+    public boolean highScoreWasBroken(){
+        return highScoreBroken;
+    }
+
+    public long getHighScore(){
+        return this.highScore;
+    }
+
+    private void loadHighScore() {
+        String file = System.getenv("APPDATA") + "\\hf2048.hscr";
+        File f = new File(file);
+        if(f.exists()) {
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(f));
+                String input = reader.readLine();
+                this.highScore = Long.parseLong(input);
+
+                reader.close();
+            }catch(Exception exc){
+                exc.printStackTrace();
+            }
+        }else{
+            this.highScore = 0;
+        }
+    }
+
+    private void saveHighScore(){
+        String file = System.getenv("APPDATA") + "\\hf2048.hscr";
+        File f = new File(file);
+
+        if(f.exists()){
+            f.delete();
+        }
+
+        try{
+            BufferedWriter writer = new BufferedWriter(new FileWriter(f));
+            String output = Long.toString(this.highScore);
+            writer.write(output);
+
+            writer.close();
+        }catch(Exception exc){
+            exc.printStackTrace();
+        }
     }
 
     private void checkGameOver(){
         if(gameField.isFull()){
             if(!gameField.possibleMove()){
                 gameOver = true;
+                //gOScreen.setActive(true);
+                gOScreen.startGOScreen();
+                btnReset.setActive(false);
             }
         }
+    }
+
+    public void resetGame(){
+        saveHighScore();
+        moving = false;
+        this.score = 0;
+        this.scoreToBeAdded = 0;
+        this.initTiles();
+        animTiles.clear();
+        gameOver = false;
+        addTile();
+        gOScreen.setActive(false);
+        btnReset.setActive(true);
+        highScoreBroken = false;
     }
 
 }

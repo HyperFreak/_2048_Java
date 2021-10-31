@@ -1,10 +1,7 @@
 package com.xieron.games.g2048.game;
 
 import com.xieron.games.g2048.input.InputManager;
-import com.xieron.games.g2048.ui.Colors;
-import com.xieron.games.g2048.ui.Fonts;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
 
@@ -16,31 +13,20 @@ public class Tile {
     private int gX, gY; //grid position
     private final GameField grid;
 
-    private int lX, lY;
-
     private final RoundRectangle2D rect;
-    private final Fonts fontManager;
 
     private boolean merged;
-    private boolean merging;
-
-    private boolean moving;
-    private int nX;
-    private int nY;
 
     private int lastXPosition;
     private int lastYPosition;
 
-    private int moveSpeed = 35;
-
     private final Game game;
 
-    public Tile(int x, int y, int width, int height, Fonts fontManager, int posX, int posY, GameField grid, Game game) {
+    public Tile(int x, int y, int width, int height, int posX, int posY, GameField grid, Game game) {
         this.game = game;
         this.value = rand2_4();
 
         this.rect = new RoundRectangle2D.Float(x, y, width, height, 10, 10);
-        this.fontManager = fontManager;
 
         this.gX = posX;
         this.gY = posY;
@@ -50,8 +36,6 @@ public class Tile {
     public void update(){
         pX = (int)rect.getX();
         pY = (int)rect.getY();
-        nX = grid.getTileXPos(gX);
-        nY = grid.getTileYPos(gY);
     }
 
     public void render(Graphics2D g){
@@ -160,4 +144,9 @@ public class Tile {
         return this.lastYPosition;
     }
 
+
+    @Override
+    public String toString() {
+        return Integer.toString(value);
+    }
 }

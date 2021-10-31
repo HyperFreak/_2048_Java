@@ -1,6 +1,5 @@
 package com.xieron.games.g2048.game;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
 
@@ -9,10 +8,10 @@ public class AnimationTile {
     private int xPos;
     private int yPos;
 
-    private int destX;
-    private int destY;
+    private final int destX;
+    private final int destY;
 
-    private int speed;
+    private final int speed;
 
     private int value;
 

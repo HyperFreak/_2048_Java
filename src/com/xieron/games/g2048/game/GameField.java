@@ -2,21 +2,20 @@ package com.xieron.games.g2048.game;
 
 import com.xieron.games.g2048.ui.Colors;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.geom.RoundRectangle2D;
-import java.util.ArrayList;
 
 public class GameField {
 
-    private int tilesX, tilesY;
-    private RoundRectangle2D field;
+    private final int tilesX;
+    private final int tilesY;
+    private final RoundRectangle2D field;
     private RoundRectangle2D[][] tileBG;
 
     private Tile[][] tiles;
-    private int border;
-    private int tileGap;
-    private int tileSize;
+    private final int border;
+    private final int tileGap;
+    private final int tileSize;
 
     public GameField(int tilesX, int tilesY, int xPos, int yPos, int width, int height, int arcW, int arcH, int tileSize, int tileGap, int border){
         this.tilesX = tilesX;
@@ -52,10 +51,6 @@ public class GameField {
             }
         }
 
-    }
-
-    public RoundRectangle2D getField(){
-        return this.field;
     }
 
     public void setTiles(Tile[][] tiles) {
@@ -144,46 +139,6 @@ public class GameField {
 
     public void removeTile(int cX, int cY){
         tiles[cX][cY] = null;
-    }
-
-
-    public Tile[][] getTileField(){
-        return this.tiles;
-    }
-
-    public Tile[] getActiveTiles(){
-        ArrayList<Tile> ts = new ArrayList<>();
-
-        for (Tile[] tile : tiles) {
-            for (Tile value : tile) {
-                if (value != null) {
-                    ts.add(value);
-                }
-            }
-        }
-
-        Tile[] output = new Tile[ts.size()];
-        int counter = 0;
-        for(Tile t : ts){
-            output[counter] = t;
-            counter++;
-        }
-        return output;
-    }
-
-
-    public void printTileArray(){
-        for(int j = 0; j < tilesY; j++){
-            for(int i = 0; i < tilesX; i++){
-                if(tiles[i][j] != null)
-                    System.out.print("[" + tiles[i][j].getValue() + "]");
-                else
-                    System.out.print("[0]");
-            }
-            System.out.print("\n");
-        }
-        System.out.println("/////////////");
-
     }
 
 }

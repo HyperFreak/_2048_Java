@@ -23,7 +23,6 @@ public class Fonts {
             }
             return f2;
         }
-
         return f1;
     }
 

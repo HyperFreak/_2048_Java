@@ -1,6 +1,5 @@
 package com.xieron.games.g2048.input;
 
-import com.xieron.games.g2048.main.Main;
 import com.xieron.games.g2048.ui.UIButton;
 
 import java.awt.event.*;
@@ -13,10 +12,6 @@ public class InputManager implements KeyListener, MouseListener, MouseMotionList
     private Runnable pressUp;
     private Runnable pressDown;
 
-    private Runnable pressEnter;
-    private Runnable pressEsc;
-    private Runnable pressBack;
-
     private boolean rightPressed = false;
     private boolean leftPressed = false;
     private boolean upPressed = false;
@@ -27,17 +22,12 @@ public class InputManager implements KeyListener, MouseListener, MouseMotionList
     private boolean wPressed = false;
     private boolean sPressed = false;
 
-    private boolean enterPressed = false;
-    private boolean escPressed = false;
-    private boolean backPressed = false;
-
     public static final int RIGHT = 0;
     public static final int LEFT = 1;
     public static final int UP = 2;
     public static final int DOWN = 3;
 
-    private ArrayList<UIButton> buttons;
-
+    private final ArrayList<UIButton> buttons;
 
     public InputManager(){
         pressLeft = this::noFunc;
@@ -45,11 +35,8 @@ public class InputManager implements KeyListener, MouseListener, MouseMotionList
         pressUp = this::noFunc;
         pressDown = this::noFunc;
 
-        pressEnter = this::noFunc;
-        pressEsc = this::noFunc;
-        pressBack = this::noFunc;
+        buttons = new ArrayList<>();
     }
-
 
     @Override
     public void keyTyped(KeyEvent e) {}
@@ -112,27 +99,6 @@ public class InputManager implements KeyListener, MouseListener, MouseMotionList
                     pressDown.run();
                 }
                 break;
-
-                //enter / escape
-            case KeyEvent.VK_ENTER:
-                if(!enterPressed){
-                    enterPressed = true;
-                    pressEnter.run();
-                }
-                break;
-            case KeyEvent.VK_ESCAPE:
-                if(!escPressed){
-                    escPressed = true;
-                    pressEsc.run();
-                }
-                break;
-            case KeyEvent.VK_BACK_SPACE:
-                if(!backPressed){
-                    backPressed = true;
-                    pressBack.run();
-                }
-                break;
-
         }
     }
 
@@ -170,22 +136,8 @@ public class InputManager implements KeyListener, MouseListener, MouseMotionList
             case KeyEvent.VK_DOWN:
                 downPressed = false;
                 break;
-
-                //enter / escape
-            case KeyEvent.VK_ENTER:
-                enterPressed = false;
-                break;
-            case KeyEvent.VK_ESCAPE:
-                escPressed = false;
-                break;
-            case KeyEvent.VK_BACK_SPACE:
-                backPressed = false;
-                break;
         }
     }
-
-
-
 
     //public setters
     public void setLeftAction(Runnable task){
@@ -204,69 +156,9 @@ public class InputManager implements KeyListener, MouseListener, MouseMotionList
         this.pressDown = task;
     }
 
-    public void setEnterAction(Runnable task){
-        this.pressEnter = task;
-    }
-
-    public void setEscAction(Runnable task){
-        this.pressEsc = task;
-    }
-
-    public void setBackAction(Runnable task){
-        this.pressBack = task;
-    }
-
-
-    //public getters
-    public boolean isRightPressed() {
-        return this.rightPressed;
-    }
-
-    public boolean isLeftPressed() {
-        return this.leftPressed;
-    }
-
-    public boolean isUpPressed() {
-        return this.upPressed;
-    }
-
-    public boolean isDownPressed() {
-        return this.downPressed;
-    }
-
-    public boolean isDPressed() {
-        return this.dPressed;
-    }
-
-    public boolean isAPressed() {
-        return this.aPressed;
-    }
-
-    public boolean isWPressed() {
-        return this.wPressed;
-    }
-
-    public boolean isSPressed() {
-        return this.sPressed;
-    }
-
-    public boolean isEnterPressed(){
-        return this.enterPressed;
-    }
-
-    public boolean isEscPressed(){
-        return this.escPressed;
-    }
-
-    public boolean isBackPressed(){
-        return this.backPressed;
-    }
-
-
     private void noFunc(){
         System.out.println("No Function has been assigned to this key yet!");
     }
-
 
     //Mouse input
 
